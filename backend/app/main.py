@@ -1,3 +1,5 @@
+import os
+
 import streamlit as st
 import openai
 import requests
@@ -6,9 +8,14 @@ from chromadb.config import Settings
 import uuid
 from datetime import datetime
 
+from dotenv import load_dotenv
+
 from EmailService import EmailService
+# Laden der .env-Datei
+load_dotenv()
+
 # Setze deinen OpenAI API-Schlüssel
-openai.api_key = ""
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # ChromaDB-Client einrichten
 chroma_client = chromadb.PersistentClient(path="../storage/chromadb")
@@ -16,10 +23,10 @@ collection = chroma_client.get_or_create_collection("moodle_data")
 
 # E-Mail-Service einrichten
 email_service = EmailService(
-    from_address="",
-    password="",
-    smtp_server="smtp.gmail.com",
-    smtp_port=587
+    from_address=os.getenv("EMAIL_ADDRESS"),
+    password=os.getenv("EMAIL_PASSWORD"),
+    smtp_server=os.getenv("SMTP_SERVER"),
+    smtp_port=int(os.getenv("SMTP_PORT"))
 )
 
 # Funktion, um das aktuelle Semester zu bestimmen
@@ -103,9 +110,9 @@ def store_moodle_data_in_chromadb(moodle_data):
             ids = []
             for abgabe in course['abgaben']:
                 if abgabe['fälligkeitsdatum'] == 'Abgabe abgelaufen oder kein Fälligkeitsdatum bekannt':
-                    document = f"Abgabe: {abgabe['name']} {abgabe['fälligkeitsdatum']}"
+                    document = f"Kurs: {course['kurs']} - Abgabe: {abgabe['name']} {abgabe['fälligkeitsdatum']}"
                 else:
-                    document = f"Abgabe: {abgabe['name']} bis {abgabe['fälligkeitsdatum']}"
+                    document = f"Kurs: {course['kurs']} - Abgabe: {abgabe['name']} bis {abgabe['fälligkeitsdatum']}"
                 documents.append(document)
                 ids.append(str(uuid.uuid4()))
             collection.add(ids=ids, documents=documents)
@@ -145,7 +152,7 @@ def query_chromadb(query):
     current_date = datetime.now().strftime('%Y-%m-%d')
     current_year = datetime.now().year
     current_semester = get_current_semester()
-    query_with_date = f"{query} {current_date} {current_semester}"
+    query_with_date = f"{query} {current_semester}"
 
     results = collection.query(query_texts=[query_with_date])
 
@@ -181,15 +188,15 @@ if st.button("Anmelden"):
         st.success("Erfolgreich angemeldet!")
 
 # Daten löschen
-if st.button("Daten aus ChromaDB löschen"):
-    delete_all_data_from_chromadb()
+#if st.button("Daten aus ChromaDB löschen"):
+ #   delete_all_data_from_chromadb()
 
 # Überprüfen, ob der Benutzer angemeldet ist
 if 'moodle_data' in st.session_state:
     moodle_data = st.session_state['moodle_data']
 
     user_email = st.text_input("Deine E-Mail-Adresse")
-    days_before = st.number_input("Tage vor Abgabe für Benachrichtigungen", min_value=1, max_value=30, value=1)
+    days_before = st.number_input("Tage vor Abgabe für Benachrichtigung", min_value=1, max_value=30, value=1)
     frequency = st.selectbox("Benachrichtigungsfrequenz", ["einmalig", "täglich"])
 
     if st.button("E-Mail-Benachrichtigungen aktivieren"):
@@ -225,9 +232,9 @@ if 'moodle_data' in st.session_state:
 
             # Abfrage an ChromaDB stellen
             chromadb_results = query_chromadb(user_question)
-            #st.write("Ähnliche Ergebnisse aus ChromaDB:")
-            #for result in chromadb_results:
-            #st.write(result)
+            st.write("Ähnliche Ergebnisse aus ChromaDB:")
+            for result in chromadb_results:
+             st.write(result)
 
             # Verwende die ChromaDB-Ergebnisse im Prompt
             if chromadb_results:
