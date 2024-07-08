@@ -1,6 +1,6 @@
 Gruppenmitglieder
 
--Moslem El-Omar
+- Moslem El-Omar
 
 # AI-basierter Lernassistent für Studenten
 
