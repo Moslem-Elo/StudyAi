@@ -11,7 +11,7 @@ Dieses Projekt ist ein AI-basierter Lernassistent, der Studenten dabei hilft, ih
 - [Installation](#installation)
 - [Verwendung](#verwendung)
 - [Konfiguration](#konfiguration)
-- [Projektstruktur](#projektstruktur)
+
 
 
 ## Features
