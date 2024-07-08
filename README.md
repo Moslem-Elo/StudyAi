@@ -12,7 +12,7 @@ Dieses Projekt ist ein AI-basierter Lernassistent, der Studenten dabei hilft, ih
 - [Verwendung](#verwendung)
 - [Konfiguration](#konfiguration)
 - [Projektstruktur](#projektstruktur)
-- [Kontakt](#kontakt)
+
 
 ## Features
 - Abrufen von Kurs- und Abgabeinformationen von Moodle
